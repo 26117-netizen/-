@@ -1,179 +1,317 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>청소년 에너지 음료 & 학업 집중도 시뮬레이터</title>
-    <style>
-        * { box-sizing: border-box; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        h1 { font-size: 1.5rem; text-align: center; color: #0f172a; margin-bottom: 8px; }
-        p.subtitle { text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 24px; }
-        
-        .control-panel { background: #f1f5f9; padding: 20px; border-radius: 12px; margin-bottom: 24px; }
-        .slider-group { margin-bottom: 16px; }
-        .slider-group:last-child { margin-bottom: 0; }
-        .slider-label { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 8px; }
-        input[type="range"] { width: 100%; height: 6px; background: #cbd5e1; border-radius: 3px; outline: none; }
-        
-        .preset-btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-        .btn { flex: 1; padding: 8px 12px; border: none; background: #e2e8f0; color: #334155; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; min-width: 120px; }
-        .btn:hover { background: #cbd5e1; }
-        
-        .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .card { padding: 16px; border-radius: 12px; text-align: center; background: #fafafa; border: 1px solid #e2e8f0; }
-        .card-title { font-size: 0.85rem; color: #64748b; margin-bottom: 6px; }
-        .card-value { font-size: 1.5rem; font-weight: 700; color: #0f172a; }
-        
-        .chart-container { margin-bottom: 24px; }
-        .chart-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-        .bar-group { margin-bottom: 12px; }
-        .bar-label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 4px; font-weight: 600; }
-        .bar-track { height: 20px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-        .bar-fill { height: 100%; width: 0%; border-radius: 10px; transition: width 0.4s ease, background-color 0.4s ease; }
-        
-        .diagnosis-box { padding: 16px; border-radius: 12px; background: #eff6ff; border-left: 4px solid #3b82f6; font-size: 0.9rem; line-height: 1.5; color: #1e40af; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>에너지 음료와 공부</title>
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#f5f7fb; --card:#fff; --text:#182033; --muted:#697386;
+    --primary:#5b5ce2; --primary2:#7b61ff; --line:#e7eaf2;
+    --good:#20a464; --warn:#e99b18; --bad:#e05252;
+  }
+  body{
+    margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;
+    background:linear-gradient(180deg,#eef0ff 0%,var(--bg) 34%);color:var(--text);line-height:1.6
+  }
+  .wrap{max-width:1050px;margin:auto;padding:24px}
+  header{padding:42px 0 26px;text-align:center}
+  .badge{display:inline-block;padding:7px 13px;border-radius:999px;background:#e4e5ff;color:#4d4fc8;font-weight:700;font-size:14px}
+  h1{font-size:clamp(32px,6vw,58px);line-height:1.1;margin:16px 0 12px;letter-spacing:-2px}
+  header p{max-width:680px;margin:auto;color:var(--muted);font-size:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:0 12px 35px rgba(36,45,80,.07);margin:20px 0}
+  .card h2{margin:0 0 8px;font-size:25px;letter-spacing:-.5px}
+  .sub{color:var(--muted);margin-top:0}
+  .controls{display:grid;grid-template-columns:1fr 180px;gap:24px;align-items:center}
+  input[type=range]{width:100%;accent-color:var(--primary)}
+  .range-value{text-align:center;font-size:31px;font-weight:800;color:var(--primary)}
+  .scale{display:flex;justify-content:space-between;color:#8991a2;font-size:13px}
+  .results{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+  .result{border:1px solid var(--line);border-radius:18px;padding:20px}
+  .result-title{display:flex;justify-content:space-between;align-items:center;font-weight:800}
+  .status{font-size:13px;padding:5px 10px;border-radius:999px;background:#eef0f5}
+  .status.good{color:var(--good);background:#e8f7ef}.status.warn{color:var(--warn);background:#fff5df}.status.bad{color:var(--bad);background:#ffebeb}
+  .bar{height:13px;background:#edf0f5;border-radius:99px;overflow:hidden;margin:14px 0}
+  .fill{height:100%;width:50%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--primary2));transition:width .35s}
+  .explain{font-size:15px;color:#50596c;margin:0}
+  .notice{background:#f8f8ff;border-left:5px solid var(--primary);padding:16px 18px;border-radius:12px;color:#454d61}
+  .chart-box{margin-top:24px;padding:22px;border:1px solid var(--line);border-radius:18px;background:#fcfcff}
+  .chart-box h3{margin:0 0 4px;font-size:19px}
+  #trendChart{display:block;width:100%;height:300px;margin-top:10px}
+  .legend{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;color:#60697b;font-size:13px;margin-top:10px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+  .dot.health{background:#7b61ff}.dot.focus{background:#20a464}
+
+  .health-bars{display:grid;gap:18px;margin-top:18px}
+  .metric{padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:#fff}
+  .metric-head{display:flex;justify-content:space-between;gap:12px;font-weight:800}
+  .metric-head strong{color:var(--primary)}
+  .metric-track{height:12px;background:#edf0f5;border-radius:99px;overflow:hidden;margin-top:10px}
+  .metric-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#7b61ff,#e05252);transition:width .4s ease}
+  .habit-summary{margin-top:14px;padding:14px 16px;border-radius:14px;background:#f8f8ff;color:#4b5365}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}
+  .flow div{padding:18px 12px;text-align:center;background:#f7f8fc;border:1px solid var(--line);border-radius:16px;font-weight:700}
+  .arrow{text-align:center;color:#999;align-self:center}
+  .quiz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .question{border:1px solid var(--line);border-radius:17px;padding:18px}
+  .question h3{font-size:16px;margin:0 0 12px}
+  select{width:100%;padding:12px;border:1px solid #d9deea;border-radius:12px;background:white;font-size:15px}
+  .advice{margin-top:18px;padding:18px;border-radius:16px;background:#f2f1ff;display:none}
+  .advice strong{display:block;margin-bottom:5px}
+  .tips{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .tip{padding:18px;border-radius:17px;background:#fafbfe;border:1px solid var(--line);text-align:center}
+  .tip .icon{font-size:30px}
+  footer{padding:25px 0 50px;text-align:center;color:#8a92a2;font-size:13px}
+  @media(max-width:760px){
+    .wrap{padding:16px}.card{padding:20px;border-radius:19px}
+    .controls,.results,.quiz-grid,.tips{grid-template-columns:1fr}
+    .range-value{text-align:left}.flow{grid-template-columns:1fr}
+    .arrow{display:none}
+  }
+
+  /* Compact single-screen graph layout */
+  #habitGraphs{display:grid !important;grid-template-columns:0.9fr 1.35fr;gap:16px;align-items:stretch;margin-top:16px}
+  #habitGraphs .chart-box{margin:0;min-width:0;padding:16px}
+  #habitGraphs .chart-box h3{margin:0 0 7px;font-size:17px}
+  #habitGraphs .chart-box .sub{font-size:12px;line-height:1.45;margin:0 0 10px}
+  #habitGraphs .health-bars{gap:12px;margin-top:10px}
+  #habitGraphs .metric{padding:11px 13px;border-radius:12px}
+  #habitGraphs .metric-head{font-size:13px}
+  #habitGraphs .metric-track{height:9px;margin-top:7px}
+  #focusHabitChart{display:block;width:100%;height:235px;max-height:235px}
+  #habitSection{margin-bottom:16px}
+  @media (max-width:760px){
+    #habitGraphs{grid-template-columns:1fr}
+    #focusHabitChart{height:220px;max-height:220px}
+  }
+
+</style>
 </head>
 <body>
+<div class="wrap">
+<header>
+  <span class="badge">중·고등학생 건강 학습 가이드</span>
+  <h1>⚡ 에너지 음료와 공부</h1>
+  <p>에너지 음료를 얼마나 마시는지에 따라 건강과 학업 집중에 어떤 변화가 생길 수 있는지 알아보세요.</p>
+</header>
 
-<div class="container">
-    <h1>청소년 건강 & 학업 집중도 시뮬레이터</h1>
-    <p class="subtitle">질병관리청 및 한국청소년정책연구원 통계 데이터 기반</p>
 
-    <!-- 조절 패널 -->
-    <div class="control-panel">
-        <div class="slider-group">
-            <div class="slider-label">
-                <span>한 달 에너지 음료 섭취량</span>
-                <span id="drinkVal" style="color:#2563eb;">0캔</span>
-            </div>
-            <input type="range" id="drinkSlider" min="0" max="30" value="0" oninput="updateSimulator()">
-            <div class="preset-btns">
-                <button class="btn" onclick="setDrink(0)">0캔 (비섭취)</button>
-                <button class="btn" onclick="setDrink(4)">4캔 (주 1회)</button>
-                <button class="btn" onclick="setDrink(12)">12캔 (주 3회)</button>
-                <button class="btn" onclick="setDrink(30)">30캔 (매일)</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- 핵심 지표 카드 -->
-    <div class="results-grid">
-        <div class="card">
-            <div class="card-title">평균 학업 집중도</div>
-            <div class="card-value" id="focusScore">85점</div>
-        </div>
-        <div class="card">
-            <div class="card-title">건강 악화 위험도</div>
-            <div class="card-value" id="healthRiskScore">12점</div>
-        </div>
-        <div class="card">
-            <div class="card-title">유효 집중 유지 시간</div>
-            <div class="card-value" id="focusTime">120분</div>
-        </div>
-    </div>
-
-    <!-- 막대 그래프 -->
-    <div class="chart-container">
-        <div class="chart-title">
-            <span>건강 악화 및 부작용 지수 (1 ~ 100)</span>
-            <span id="riskStatus" style="font-size: 0.85rem; padding: 2px 8px; border-radius: 4px; background: #dcfce7; color: #166534;">안전 범위</span>
-        </div>
-
-        <div class="bar-group">
-            <div class="bar-label"><span>우울감 지수</span><span id="depVal">15</span></div>
-            <div class="bar-track"><div class="bar-fill" id="depBar"></div></div>
-        </div>
-        <div class="bar-group">
-            <div class="bar-label"><span>불면증 지수</span><span id="insVal">10</span></div>
-            <div class="bar-track"><div class="bar-fill" id="insBar"></div></div>
-        </div>
-        <div class="bar-group">
-            <div class="bar-label"><span>두통 및 어지럼증</span><span id="headVal">12</span></div>
-            <div class="bar-track"><div class="bar-fill" id="headBar"></div></div>
-        </div>
-    </div>
-
-    <!-- 진단 소견 -->
-    <div class="diagnosis-box" id="diagnosisText">
-        현재 상태는 카페인과 당류로 인한 신체적 부작용이 거의 없는 최적의 정상 상태입니다. 안정적인 수면 패턴과 정상적인 혈당 유지가 가능하여 최상의 학업 집중력을 발휘할 수 있습니다.
-    </div>
+<footer>
+  이 사이트는 교육용 정보 제공을 목적으로 합니다. 개인의 건강 상태를 진단하지 않습니다.<br>
+  자료 참고: 미국 CDC 및 미국소아과학회(AAP)의 청소년 카페인·에너지 음료 관련 안내.
+</footer>
 </div>
 
 <script>
-function updateSimulator() {
-    const cans = parseInt(document.getElementById('drinkSlider').value);
-    document.getElementById('drinkVal').innerText = cans + '캔';
+const data = [
+  {
+    label:"0캔", health:"안정적", focus:"안정적", hc:"good", fc:"good",
+    hb:92, fb:92,
+    ht:"카페인을 섭취하지 않는 상태입니다. 충분한 수면과 규칙적인 생활을 유지하는 것이 중요해요.",
+    ft:"카페인으로 인한 일시적인 각성 효과를 고려할 필요가 없는 상태입니다."
+  },
+  {
+    label:"1캔", health:"영향 가능", focus:"일시적 각성 가능", hc:"warn", fc:"warn",
+    hb:78, fb:84,
+    ht:"카페인에 민감한 사람은 심박수 증가, 불안감 또는 잠드는 데 어려움을 느낄 수 있어요.",
+    ft:"일시적으로 더 깨어 있거나 집중되는 느낌을 받을 수 있지만 개인차가 큽니다."
+  },
+  {
+    label:"2캔", health:"주의 필요", focus:"수면 영향 가능", hc:"warn", fc:"warn",
+    hb:61, fb:66,
+    ht:"카페인 섭취량이 늘면서 불안감, 심박수 증가, 수면 방해 등의 가능성도 커질 수 있어요.",
+    ft:"처음에는 각성될 수 있지만 수면이 방해되면 다음 날 집중과 학습에 불리할 수 있어요."
+  },
+  {
+    label:"3캔", health:"주의 필요", focus:"집중에 불리할 수 있음", hc:"bad", fc:"bad",
+    hb:43, fb:48,
+    ht:"여러 캔을 마시면 카페인 섭취량이 크게 늘 수 있습니다. 제품별 함량을 꼭 확인하세요.",
+    ft:"과도한 카페인 섭취와 수면 부족이 겹치면 다음 날 피로·주의력 저하로 이어질 수 있습니다."
+  },
+  {
+    label:"3캔 이상", health:"높은 주의", focus:"학습에 불리할 가능성", hc:"bad", fc:"bad",
+    hb:27, fb:31,
+    ht:"카페인 섭취가 매우 많아질 수 있습니다. 불면, 불안, 심박수 증가 등 부작용 위험을 특히 주의해야 합니다.",
+    ft:"밤늦게 여러 캔을 마시는 습관은 수면을 크게 방해할 수 있고, 이는 학습에 불리할 수 있습니다."
+  }
+];
 
-    // 수치 계산식 (데이터 연동)
-    const ratio = cans / 30;
-    
-    // 악화 지수 수치 (1 ~ 100)
-    const depression = Math.round(15 + (63 * ratio));
-    const insomnia = Math.round(10 + (75 * ratio));
-    const headache = Math.round(12 + (70 * ratio));
-    
-    const avgHealthRisk = Math.round((depression + insomnia + headache) / 3);
-    const focusScore = Math.max(25, Math.round(85 - (55 * ratio)));
-    const focusTime = Math.max(30, Math.round(120 - (80 * ratio)));
+const cans = document.getElementById("cans");
+function update(){
+  const d=data[Number(cans.value)];
+  document.getElementById("cansText").textContent=d.label;
+  document.getElementById("healthStatus").textContent=d.health;
+  document.getElementById("healthStatus").className="status "+d.hc;
+  document.getElementById("focusStatus").textContent=d.focus;
+  document.getElementById("focusStatus").className="status "+d.fc;
+  document.getElementById("healthBar").style.width=d.hb+"%";
+  document.getElementById("focusBar").style.width=d.fb+"%";
+  document.getElementById("healthText").textContent=d.ht;
+  document.getElementById("focusText").textContent=d.ft;
+}
+cans.addEventListener("input",update);
 
-    // 화면 UI 업데이트
-    document.getElementById('focusScore').innerText = focusScore + '점';
-    document.getElementById('healthRiskScore').innerText = avgHealthRisk + '점';
-    document.getElementById('focusTime').innerText = focusTime + '분';
 
-    document.getElementById('depVal').innerText = depression;
-    document.getElementById('insVal').innerText = insomnia;
-    document.getElementById('headVal').innerText = headache;
+const chartData=[
+ {label:"0캔",health:95,focus:92},{label:"5캔",health:90,focus:88},
+ {label:"10캔",health:84,focus:82},{label:"15캔",health:76,focus:74},
+ {label:"20캔",health:67,focus:65},{label:"25캔",health:56,focus:55},
+ {label:"30캔 이상",health:43,focus:45}
+];
+function drawTrendChart(){
+ const c=document.getElementById("trendChart"),r=c.getBoundingClientRect(),dpr=devicePixelRatio||1;
+ const W=Math.max(320,r.width),H=300,p={l:42,r:20,t:22,b:48},w=W-p.l-p.r,h=H-p.t-p.b;
+ c.width=W*dpr;c.height=H*dpr;const x=c.getContext("2d");x.scale(dpr,dpr);
+ const X=i=>p.l+i/(chartData.length-1)*w,Y=v=>p.t+(100-v)/100*h;
+ x.clearRect(0,0,W,H);x.font='12px system-ui,"Noto Sans KR",sans-serif';x.strokeStyle="#e7eaf2";x.fillStyle="#7a8394";x.lineWidth=1;
+ [0,25,50,75,100].forEach(v=>{let yy=Y(v);x.beginPath();x.moveTo(p.l,yy);x.lineTo(W-p.r,yy);x.stroke();x.fillText(v,8,yy+4)});
+ chartData.forEach((d,i)=>x.fillText(d.label,X(i)-18,H-20));
+ function draw(k,col){x.beginPath();chartData.forEach((d,i)=>i?x.lineTo(X(i),Y(d[k])):x.moveTo(X(i),Y(d[k])));x.strokeStyle=col;x.lineWidth=3;x.stroke();
+ chartData.forEach((d,i)=>{x.beginPath();x.arc(X(i),Y(d[k]),4.5,0,Math.PI*2);x.fillStyle=col;x.fill()})}
+ draw("health","#7b61ff");draw("focus","#20a464");
+ x.fillStyle="#50596c";x.font='bold 12px system-ui,"Noto Sans KR",sans-serif';x.fillText("지수",p.l-8,14);
+}
+drawTrendChart();addEventListener("resize",drawTrendChart);
 
-    // 그래프 바 업데이트
-    setBar('depBar', depression);
-    setBar('insBar', insomnia);
-    setBar('headBar', headache);
 
-    // 위험도 상태 및 소견 텍스트
-    const statusTag = document.getElementById('riskStatus');
-    const diagText = document.getElementById('diagnosisText');
+const focusHabitCanvas = document.getElementById("focusHabitChart");
 
-    if (avgHealthRisk <= 25) {
-        statusTag.innerText = "안전 범위";
-        statusTag.style.background = "#dcfce7"; statusTag.style.color = "#166534";
-        diagText.innerText = "현재 상태는 카페인과 당류로 인한 부작용이 거의 없는 최적의 상태입니다. 안정적인 수면과 혈당 유지가 가능하여 높은 학업 집중력을 유지할 수 있습니다.";
-    } else if (avgHealthRisk <= 50) {
-        statusTag.innerText = "주의 단계";
-        statusTag.style.background = "#fef9c3"; statusTag.style.color = "#854d0e";
-        diagText.innerText = "주 1회 이상 섭취로 인해 섭취 후 2시간 내외로 일시적인 '혈당 급락(Sugar Crash)'을 겪을 수 있습니다. 가벼운 수면 불안과 집중력 기복이 시작되는 단계입니다.";
-    } else if (avgHealthRisk <= 75) {
-        statusTag.innerText = "경고 단계";
-        statusTag.style.background = "#ffedd5"; statusTag.style.color = "#9a3412";
-        diagText.innerText = "주 3회 이상 고빈도 섭취 단계입니다. 카페인에 의한 아데노신 수용체 차단 및 인슐린 과다 분비로 만성 피로, 자주 발생하는 두통, 수면 장애 위험성이 크게 증가합니다.";
-    } else {
-        statusTag.innerText = "위험 단계";
-        statusTag.style.background = "#fee2e2"; statusTag.style.color = "#991b1b";
-        diagText.innerText = "매일 섭취하는 고위험군입니다. 뇌 자율신경계 과자극 및 혈당 불균형으로 인해 극심한 불면증, 만성 두통, 피로 리바운드가 발생하며 학업 집중도가 심각하게 저하됩니다.";
-    }
+function clamp(v, min, max){
+  return Math.max(min, Math.min(max, v));
 }
 
-function setBar(id, val) {
-    const bar = document.getElementById(id);
-    bar.style.width = val + '%';
-    
-    if (val <= 25) bar.style.backgroundColor = '#22c55e';
-    else if (val <= 50) bar.style.backgroundColor = '#eab308';
-    else if (val <= 75) bar.style.backgroundColor = '#f97316';
-    else bar.style.backgroundColor = '#ef4444';
+function habitScores(){
+  const q1 = Number(document.getElementById("q1").value);
+  const q2 = Number(document.getElementById("q2").value);
+  const q3 = Number(document.getElementById("q3").value);
+
+  // Educational model only: combines frequency, late timing, and delayed sleep.
+  const base = q1 * 8 + q2 * 7 + q3 * 12;
+  const depression = clamp(Math.round(10 + base * 0.72), 0, 100);
+  const insomnia = clamp(Math.round(8 + q1 * 10 + q2 * 10 + q3 * 22), 0, 100);
+  const headache = clamp(Math.round(7 + q1 * 11 + q2 * 5 + q3 * 12), 0, 100);
+
+  return {q1,q2,q3,depression,insomnia,headache,burden:clamp(base,0,100)};
 }
 
-function setDrink(val) {
-    document.getElementById('drinkSlider').value = val;
-    updateSimulator();
+function renderMetric(id, value){
+  document.getElementById(id+"Value").textContent = value;
+  document.getElementById(id+"Bar").style.width = value + "%";
 }
 
-// 최초 실행
-updateSimulator();
+function drawHabitFocusChart(scores){
+  const c = focusHabitCanvas;
+  const r = c.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const W = Math.max(320, r.width || 600);
+  const H = 300;
+  const p = {l:42,r:18,t:22,b:46};
+  const w = W-p.l-p.r, h = H-p.t-p.b;
+
+  c.width = Math.round(W*dpr);
+  c.height = Math.round(H*dpr);
+  const ctx = c.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  const sleepPenalty = scores.q3 * 5 + scores.q2 * 2 + scores.q1 * 1.5;
+  const latePenalty = scores.q2 * 2;
+  const hours = ["08시","10시","12시","14시","16시","18시","20시","22시"];
+  const values = hours.map((_,i)=>{
+    const circadian = [84,90,86,78,81,76,69,60][i];
+    const penalty = sleepPenalty + (i >= 5 ? latePenalty : 0);
+    return clamp(Math.round(circadian - penalty), 35, 95);
+  });
+
+  const X=i=>p.l+(i/(values.length-1))*w;
+  const Y=v=>p.t+(100-v)/100*h;
+
+  ctx.font='12px system-ui,"Noto Sans KR",sans-serif';
+  ctx.strokeStyle="#e7eaf2";
+  ctx.fillStyle="#7a8394";
+  ctx.lineWidth=1;
+
+  [0,25,50,75,100].forEach(v=>{
+    const yy=Y(v);
+    ctx.beginPath();ctx.moveTo(p.l,yy);ctx.lineTo(W-p.r,yy);ctx.stroke();
+    ctx.fillText(v,8,yy+4);
+  });
+
+  hours.forEach((label,i)=>{
+    ctx.fillText(label,X(i)-15,H-18);
+  });
+
+  ctx.beginPath();
+  values.forEach((v,i)=>i ? ctx.lineTo(X(i),Y(v)) : ctx.moveTo(X(i),Y(v)));
+  ctx.strokeStyle="#20a464";
+  ctx.lineWidth=3;
+  ctx.stroke();
+
+  values.forEach((v,i)=>{
+    ctx.beginPath();
+    ctx.arc(X(i),Y(v),4.5,0,Math.PI*2);
+    ctx.fillStyle="#20a464";
+    ctx.fill();
+  });
+
+  ctx.fillStyle="#50596c";
+  ctx.font='bold 12px system-ui,"Noto Sans KR",sans-serif';
+  ctx.fillText("집중도 지수",p.l-8,14);
+}
+
+function showHabitGraphs(){
+  const q1=document.getElementById("q1").value;
+  const q2=document.getElementById("q2").value;
+  const q3=document.getElementById("q3").value;
+  const box=document.getElementById("advice");
+  const graphs=document.getElementById("habitGraphs");
+
+  if(q1===""||q2===""||q3===""){
+    box.style.display="block";
+    box.innerHTML="<strong>세 문항을 모두 선택해 주세요.</strong> 선택을 완료하면 아래에 나의 건강·집중도 그래프가 나타납니다.";
+    graphs.style.display="none";
+    return;
+  }
+
+  const s=habitScores();
+  renderMetric("depression",s.depression);
+  renderMetric("insomnia",s.insomnia);
+  renderMetric("headache",s.headache);
+
+  let message;
+  if(s.insomnia >= 55 || s.q3 === 2){
+    message = "수면 지연과 늦은 시간 섭취가 포함된 패턴입니다. 카페인 섭취 시간을 앞당기고 충분한 수면을 확보하는 것이 중요합니다.";
+  }else if(s.q1 >= 2 || s.q2 >= 2){
+    message = "섭취 빈도 또는 늦은 시간 섭취가 비교적 높은 패턴입니다. 제품의 카페인 함량을 확인하고 섭취 빈도를 줄이는 방법을 생각해 보세요.";
+  }else{
+    message = "현재 답변에서는 비교적 부담이 낮은 패턴으로 계산됩니다. 그래도 청소년에게는 충분한 수면과 규칙적인 생활이 중요합니다.";
+  }
+
+  box.style.display="block";
+  box.innerHTML="<strong>📌 나의 습관 분석</strong>"+message+
+    '<div class="habit-summary">그래프는 실제 진단 결과가 아니라, 선택한 습관을 바탕으로 만든 교육용 예시입니다.</div>';
+
+  graphs.style.display="block";
+  requestAnimationFrame(()=>drawHabitFocusChart(s));
+}
+
+document.getElementById("check").addEventListener("click",showHabitGraphs);
+
+["q1","q2","q3"].forEach(id=>{
+  document.getElementById(id).addEventListener("change",()=>{
+    const all=["q1","q2","q3"].every(k=>document.getElementById(k).value!=="");
+    if(all) showHabitGraphs();
+  });
+});
+
+window.addEventListener("resize",()=>{
+  const graphs=document.getElementById("habitGraphs");
+  if(graphs && graphs.style.display!=="none"){
+    drawHabitFocusChart(habitScores());
+  }
+});
 </script>
-
 </body>
 </html>
