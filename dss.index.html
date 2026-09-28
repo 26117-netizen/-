@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>에너지 음료 섭취 습관 체크</title>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#f4f7fb;color:#172033;font-family:Arial,"Noto Sans KR",sans-serif}
+.container{max-width:1000px;margin:auto;padding:30px 18px 60px}
+h1{font-size:30px;margin:0 0 8px}
+.desc{color:#667085;margin:0 0 24px}
+.card{background:#fff;border-radius:18px;padding:24px;margin-bottom:18px;box-shadow:0 6px 24px rgba(0,0,0,.07)}
+.questions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.question label{display:block;font-weight:700;margin-bottom:9px;line-height:1.4}
+select{width:100%;height:46px;border:1px solid #d6dce7;border-radius:10px;padding:0 12px;font-size:15px;background:#fff}
+.result-link{display:block;text-align:center;text-decoration:none;margin-top:20px;background:#2463eb;color:#fff;font-weight:700;font-size:17px;padding:15px;border-radius:12px}
+.result-link:hover{background:#174fc7}
+#results{scroll-margin-top:20px}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.result-box{border:1px solid #e3e7ef;border-radius:14px;padding:18px}
+.result-box h2{font-size:19px;margin:0 0 16px}
+.metric{margin:17px 0}
+.metric-title{display:flex;justify-content:space-between;font-size:14px;margin-bottom:7px}
+.bar{height:13px;background:#edf0f5;border-radius:99px;overflow:hidden}
+.fill{height:100%;background:#2463eb;border-radius:99px}
+canvas{width:100%;height:250px;display:block}
+.note{font-size:13px;color:#667085;line-height:1.6;margin-top:12px}
+@media(max-width:700px){
+ .questions,.results-grid{grid-template-columns:1fr}
+ h1{font-size:25px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>에너지 음료 섭취 습관 체크</h1>
+<p class="desc">나의 섭취 습관을 선택하고 아래의 「내 결과 보기」를 눌러 결과를 확인해보세요.</p>
+
+<div class="card">
+  <div class="questions">
+    <div class="question">
+      <label for="q1">일주일에 에너지 음료를 몇 번 마시나요?</label>
+      <select id="q1">
+        <option>선택하세요</option>
+        <option>0회</option>
+        <option>1~2회</option>
+        <option>3~4회</option>
+        <option>5회 이상</option>
+      </select>
+    </div>
+
+    <div class="question">
+      <label for="q2">주로 언제 마시나요?</label>
+      <select id="q2">
+        <option>선택하세요</option>
+        <option>아침</option>
+        <option>방과 후</option>
+        <option>저녁</option>
+        <option>밤 / 시험 공부</option>
+      </select>
+    </div>
+
+    <div class="question">
+      <label for="q3">마신 뒤 잠드는 시간이 늦어지나요?</label>
+      <select id="q3">
+        <option>선택하세요</option>
+        <option>거의 없다</option>
+        <option>가끔 있다</option>
+        <option>자주 있다</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- JavaScript가 막혀 있어도 이 링크는 반드시 작동 -->
+  <a class="result-link" href="#results" id="resultButton">내 결과 보기</a>
+</div>
+
+<div id="results" class="card">
+  <div class="results-grid">
+
+    <div class="result-box">
+      <h2>분야별 건강 관련 신호</h2>
+
+      <div class="metric">
+        <div class="metric-title">
+          <span>기분 저하 관련 신호</span><strong id="m1">10</strong>
+        </div>
+        <div class="bar"><div class="fill" id="b1" style="width:10%"></div></div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-title">
+          <span>수면 방해 관련 신호</span><strong id="m2">8</strong>
+        </div>
+        <div class="bar"><div class="fill" id="b2" style="width:8%"></div></div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-title">
+          <span>두통 관련 신호</span><strong id="m3">7</strong>
+        </div>
+        <div class="bar"><div class="fill" id="b3" style="width:7%"></div></div>
+      </div>
+
+      <p class="note">
+        ※ 실제 의학적 진단 점수가 아니라, 섭취 습관을 이해하기 위한 교육용 예시 지수입니다.
+      </p>
+    </div>
+
+    <div class="result-box">
+      <h2>시간대별 학업 집중도 예시</h2>
+      <canvas id="chart" width="600" height="300"></canvas>
+      <p class="note">
+        ※ 실제 학생의 집중도를 측정한 통계가 아니라, 변화를 설명하기 위한 교육용 모델입니다.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var button=document.getElementById("resultButton");
+  var q1=document.getElementById("q1");
+  var q2=document.getElementById("q2");
+  var q3=document.getElementById("q3");
+
+  function clamp(n){return Math.max(0,Math.min(100,n));}
+
+  function update(){
+    var a=q1.selectedIndex-1;
+    var b=q2.selectedIndex-1;
+    var c=q3.selectedIndex-1;
+
+    if(a<0)a=0;
+    if(b<0)b=0;
+    if(c<0)c=0;
+
+    var m1=clamp(Math.round(10+a*10+b*5+c*8));
+    var m2=clamp(Math.round(8+a*12+b*12+c*25));
+    var m3=clamp(Math.round(7+a*11+b*6+c*12));
+
+    document.getElementById("m1").textContent=m1;
+    document.getElementById("m2").textContent=m2;
+    document.getElementById("m3").textContent=m3;
+    document.getElementById("b1").style.width=m1+"%";
+    document.getElementById("b2").style.width=m2+"%";
+    document.getElementById("b3").style.width=m3+"%";
+
+    draw(a,b,c);
+  }
+
+  function draw(a,b,c){
+    var canvas=document.getElementById("chart");
+    var ctx=canvas.getContext("2d");
+    var w=canvas.width,h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    var labels=["08","10","12","14","16","18","20","22"];
+    var base=[84,90,86,82,80,76,69,60];
+    var values=[];
+
+    for(var i=0;i<base.length;i++){
+      var penalty=a*2+c*5;
+      if(b===3 && i>=5) penalty+=10;
+      else if(b===2 && i>=4) penalty+=5;
+      values.push(clamp(base[i]-penalty));
+    }
+
+    ctx.strokeStyle="#e1e5ec";
+    ctx.lineWidth=1;
+    ctx.font="13px Arial";
+    ctx.fillStyle="#667085";
+
+    for(var y=40;y<=100;y+=20){
+      var yy=20+(100-y)/60*210;
+      ctx.beginPath();
+      ctx.moveTo(45,yy);
+      ctx.lineTo(w-20,yy);
+      ctx.stroke();
+      ctx.fillText(y,10,yy+4);
+    }
+
+    ctx.strokeStyle="#2463eb";
+    ctx.lineWidth=4;
+    ctx.beginPath();
+
+    for(var j=0;j<values.length;j++){
+      var x=45+j*((w-65)/(values.length-1));
+      var yy=20+(100-values[j])/60*210;
+      if(j===0)ctx.moveTo(x,yy);
+      else ctx.lineTo(x,yy);
+    }
+    ctx.stroke();
+
+    for(var k=0;k<values.length;k++){
+      var px=45+k*((w-65)/(values.length-1));
+      var py=20+(100-values[k])/60*210;
+      ctx.fillStyle="#2463eb";
+      ctx.beginPath();
+      ctx.arc(px,py,5,0,Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle="#667085";
+      ctx.fillText(labels[k]+"시",px-10,270);
+    }
+  }
+
+  q1.addEventListener("change",update);
+  q2.addEventListener("change",update);
+  q3.addEventListener("change",update);
+
+  button.addEventListener("click",function(){
+    update();
+  });
+
+  update();
+})();
+</script>
+
+</div>
+</body>
+</html>
